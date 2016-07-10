@@ -151,7 +151,7 @@ avatar.getControllers().forEach(function (controller) {
   });
 });
 
-threeBinding.addObjectTypeLoader('viveController', SolVR.ViveControllerLoader);
+threeBinding.addObjectTypeLoader('viveController', SolVR.ViveControllerLoader(THREE));
 ```
 
 The `viveController` object type isn't handled by the normal ThreeBdining, but `SolVR.ViveControllerLoader` can be
