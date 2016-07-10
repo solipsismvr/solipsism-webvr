@@ -19,8 +19,19 @@ function GameLoop() {
 
 }
 
+GameLoop.prototype.start = function() {
+  this.isAnimating = true;
+  this.animate();
+}
+
+GameLoop.prototype.stop = function() {
+  this.isAnimating = false;
+}
+
 GameLoop.prototype.animate = function() {
-  this.vrDisplay.requestAnimationFrame( this.animate.bind(this) );
+  if( this.isAnimating) {
+    this.vrDisplay.requestAnimationFrame( this.start.bind(this) );
+  }
   this.render();
 }
 
@@ -50,6 +61,11 @@ GameLoop.prototype.render = function() {
  * Item must have an onRender() method.
  */
 GameLoop.prototype.addItem = function(item) {
+  if (!item.onRender) {
+    console.log('GameLoop.addItem(): No onRender() method on', item);
+    return;
+  }
+
   this.callbacks.push(function(delta) {
     item.onRender(delta);
   });
