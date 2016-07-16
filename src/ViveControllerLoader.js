@@ -1,4 +1,4 @@
-var ObjLoader = require('./ObjLoader');
+var ObjLoader = require('./support/ObjLoader');
 
 function ViveControllerLoader(THREE) {
   var viveController;

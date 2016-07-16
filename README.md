@@ -18,7 +18,7 @@ to add physics and client/server multi-player support, see the [solipsism](https
 ```js
 var THREE = require('three')
 var Sol = require('solipsism');
-var SolVR = require('solipsism-webvr');
+var SolVR = require('solipsism-webvr')(THREE);
 
 var scene = new THREE.Scene();
 var world = new Sol.GameWorld('Client');
@@ -52,16 +52,29 @@ world.add({
 The first thing we do is create an avatar:
 
 ```js
-var avatar = SolVR.createAvatar([
-  { hmd: 'standing' },
-  { hmd: 'seated' },
-  { hmd: 'mobile-polyfill', locomotion: 'keyboard' },
-  { hmd: 'pointerlock', locomotion: 'keyboard' },
+var A = SolVR.AvatarHandlers;
+var avatar = SolVR.createBestAvatar([
+  A.roomscale(),
+  A.combine(([ A.seated(), A.keyboard() ]),
+  A.phoneLook(),
+  A.combine([ A.mouseLook(), A.keyboard() ]),
 ]);
 ```
 
 The avatar object handles the player view of the game world, and influence in it. Because there are so many devices
-available, `createAvatar()` is passed a list of different options. 
+available, `createBestAvatar()` is passed a list of different options. The first one that is supported by the current
+device will be used.
+
+SolVR.AvatarHandlers contains a number of methods that return different Avatar handlers you can use:
+
+ * `SolVR.AvatarHandlers.roomscale()`: Camera and tracking for a roomscale VR HMD (e.g. Vive)
+ * `SolVR.AvatarHandlers.sitting()`: Camera and tracking for a sitting VR HMD (e.g. Oculus)
+ * `SolVR.AvatarHandlers.mouseLook()`: Camera and head movement driven by mouse pointerlock
+ * `SolVR.AvatarHandlers.phoneLook()`: Camera and head movement driven by phone orientation (e.g. Google Cardboard)
+ * `SolVR.AvatarHandlers.keyboard()`: Keyboard locomation via arrow keys or WASD
+ * `SolVR.AvatarHandlers.combine([ a, b, c... ])`: Combine a number of different handlers together.
+
+
 
 Each option will configure interaction
 
@@ -75,6 +88,16 @@ Each option will configure interaction
 
 So the example above gives us the ability to interact across a number of different devices.
 
+If you want to do it manually, you can create an Avatar object and plug in handlers:
+
+```js
+var A = SolVR.AvatarHandlers;
+var avatar = new SolVR.Avatar(A.compose([
+  A.mouseLook(),
+  A.keyboard(),
+]);
+```
+
 ### Set up rendering
 
 Once we have our avatar created, we should add its camera to the scene. We also create a renderer that will 
@@ -82,7 +105,7 @@ render to the entire window.
 
 ```js
 avatar.addToScene(scene);
-var renderer = new SolVR.FullScreenRenderer(scene, avatar.getCamera());
+var renderer = new SolVR.FullScreenRenderer(THREE, scene, avatar.getCamera());
 ```
 
 Next, we need to kick off rendering. `GameLoop` is a simple class that lets us register a number of objects to

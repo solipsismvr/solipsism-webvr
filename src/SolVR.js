@@ -1,10 +1,25 @@
-var AvatarCreator = require('./AvatarCreator');
+module.exports = function (THREE) {
 
-var avatarCreator = new AvatarCreator();
+  return {
+    GameLoop: require('./GameLoop'),
+    FullScreenRenderer: require('./FullScreenRenderer'),
+    ViveControllerLoader: require('./ViveControllerLoader')(THREE),
 
-module.exports = {
-  GameLoop: require('./GameLoop'),
-  FullScreenRenderer: require('./GameLoop'),
-  ViveControllerLoader: require('./ViveControllerLoader'),
-  createAvatar: avatarCreator.createAvatar.bind(avatarCreator),
+    createBestAvatar: require('./createBestAvatar'),
+    Avatar: require('./Avatar'),
+
+    // Fun-fact: you can use bind() to curry functions
+    AvatarHandlers: {
+      combine: require('./avatar/combine'),
+      mouseLook: require('./avatar/mouseLook').bind(this, THREE),
+      keyboard: require('./avatar/keyboard').bind(this, THREE),
+
+// Not yet implemented
+//      roomscale: require('./avatar/roomscale').bind(this, THREE),
+//      seated: require('./avatar/seated').bind(this, THREE),
+//      phoneLook: require('./avatar/phoneLook').bind(this, THREE),
+//      viveController: require('./avatar/viveController').bind(this, THREE),
+    }
+  };
+
 };
