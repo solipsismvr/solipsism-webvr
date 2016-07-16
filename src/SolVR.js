@@ -2,7 +2,6 @@ module.exports = function (THREE) {
 
   return {
     GameLoop: require('./GameLoop'),
-    FullScreenRenderer: require('./FullScreenRenderer'),
     ViveControllerLoader: require('./ViveControllerLoader')(THREE),
 
     createBestAvatar: require('./createBestAvatar'),
@@ -13,6 +12,8 @@ module.exports = function (THREE) {
       combine: require('./avatar/combine'),
       mouseLook: require('./avatar/mouseLook').bind(this, THREE),
       keyboard: require('./avatar/keyboard').bind(this, THREE),
+
+      renderer: require('./avatar/renderer').bind(this, THREE),
 
 // Not yet implemented
 //      roomscale: require('./avatar/roomscale').bind(this, THREE),

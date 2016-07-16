@@ -20,11 +20,11 @@ module.exports = function (children) {
       });
     },
 
-    getHandler: function () {
+    getHandler: function (scene) {
       var handlers = [];
 
       children.forEach(function (child) {
-        handlers.push(child.getHandler());
+        handlers.push(child.getHandler(scene));
       });
 
       function findFirst (method) {

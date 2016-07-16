@@ -1,14 +1,22 @@
 var AvatarHmd = require('./AvatarHmd.js');
 
 function Avatar (handler) {
-  var handlerHandler = handler.getHandler();
-  var camera = handlerHandler.getCamera();
-  var avatarObject = handlerHandler.applyAvatarObject(camera);
+  var onRender;
+  var camera;
 
   return {
-    onRender: handlerHandler.onRender.bind(handlerHandler),
+    addToScene: function(scene) {
+      var handlerHandler = handler.getHandler(scene);
+
+      camera = handlerHandler.getCamera();
+      onRender = handlerHandler.onRender.bind(handlerHandler);
+
+      scene.add(handlerHandler.applyAvatarObject(camera));
+    },
+    onRender: function(time) {
+      if (onRender) onRender(time);
+    },
     getCamera: function() { return camera },
-    addToScene: function(scene) { scene.add(avatarObject); },
   };
 }
 

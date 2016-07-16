@@ -67,24 +67,13 @@ device will be used.
 
 SolVR.AvatarHandlers contains a number of methods that return different Avatar handlers you can use:
 
- * `SolVR.AvatarHandlers.roomscale()`: Camera and tracking for a roomscale VR HMD (e.g. Vive)
- * `SolVR.AvatarHandlers.sitting()`: Camera and tracking for a sitting VR HMD (e.g. Oculus)
- * `SolVR.AvatarHandlers.mouseLook()`: Camera and head movement driven by mouse pointerlock
- * `SolVR.AvatarHandlers.phoneLook()`: Camera and head movement driven by phone orientation (e.g. Google Cardboard)
+ * `SolVR.AvatarHandlers.fullScreenRenderer()`: Camera and renderer that can switch to VR mode
+ * `SolVR.AvatarHandlers.roomscale()`: Tracking for a roomscale VR HMD (e.g. Vive)
+ * `SolVR.AvatarHandlers.sitting()`: Tracking for a sitting VR HMD (e.g. Oculus)
+ * `SolVR.AvatarHandlers.mouseLook()`: Head movement driven by mouse pointerlock
+ * `SolVR.AvatarHandlers.phoneLook()`: Head movement driven by phone orientation (e.g. Google Cardboard)
  * `SolVR.AvatarHandlers.keyboard()`: Keyboard locomation via arrow keys or WASD
  * `SolVR.AvatarHandlers.combine([ a, b, c... ])`: Combine a number of different handlers together.
-
-
-
-Each option will configure interaction
-
- * hmd:
-   * standing: e.g. the HTC Vive
-   * seated: e.g. the Oculus Rift or DK2
-   * mobile-polyfill: fixed-position head tracking, e.g. Google Cardboard
-   * pointerlock: desktop-based interaction with a mouse
- * locomotion:
-   * keyboard: Use the arrow keys or WASD keys to move the avatar about the world
 
 So the example above gives us the ability to interact across a number of different devices.
 

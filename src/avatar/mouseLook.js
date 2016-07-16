@@ -14,7 +14,7 @@ function mouselook (THREE) {
     /**
      * Get an active instance of this handler
      */
-    getHandler: function () {
+    getHandler: function (scene) {
       var element = document.body;
 
       var pointerLockEnabled = false;
@@ -71,10 +71,6 @@ function mouselook (THREE) {
           document.removeEventListener('webkitpointerlockchange', onPointerLockChange, false);
 
           element.removeEventListener('click', onDocumentClick, false);
-        },
-
-        getCamera: function () {
-          return new THREE.PerspectiveCamera( 70, 1, 0.01, 100 );
         },
 
         /**
