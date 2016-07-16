@@ -53,12 +53,16 @@ The first thing we do is create an avatar:
 
 ```js
 var A = SolVR.AvatarHandlers;
-var avatar = SolVR.createBestAvatar([
-  A.roomscale(),
-  A.combine(([ A.seated(), A.keyboard() ]),
-  A.phoneLook(),
-  A.combine([ A.mouseLook(), A.keyboard() ]),
-]);
+SolVR.fetchBestAvatar([
+  A.combine([ A.renderer(), A.roomscale() ]),
+  A.combine([ A.renderer(), A.seated(), A.keyboard() ]),
+  A.combine([ A.renderer(), A.phoneLook() ]),
+  A.combine([ A.renderer(),  A.mouseLook(), A.keyboard() ]),
+])
+.then(function (avatar) {
+  // set-up code here...
+
+})
 ```
 
 The avatar object handles the player view of the game world, and influence in it. Because there are so many devices
@@ -93,18 +97,20 @@ Once we have our avatar created, we should add its camera to the scene. We also 
 render to the entire window.
 
 ```js
-avatar.addToScene(scene);
-var renderer = new SolVR.FullScreenRenderer(THREE, scene, avatar.getCamera());
+.then(function (avatar) {
+  avatar.addToScene(scene);
+});
 ```
 
 Next, we need to kick off rendering. `GameLoop` is a simple class that lets us register a number of objects to
 have `onRender()` called with every animation frame.
 
 ```js
-var gameLoop = new SolVR.GameLoop();
-gameLoop.add(avatar);
-gameLoop.add(renderer);
-gameLoop.start();
+.then(function (avatar) {
+  var gameLoop = new SolVR.GameLoop();
+  avatar.addToScene(scene);
+  gameLoop.add(avatar);
+});
 ```
 
 At this point, you should have the ability to explore your scene using the capabilities of whatever device you connect

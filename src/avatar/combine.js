@@ -14,9 +14,12 @@
 module.exports = function (children) {
 
   return {
-    isAvailable: function() {
-      return handlers.every(function (handler) {
-        return handler.isAvailable();
+    fetchIsAvailable: function() {
+      return Promise.all(children.map(function (child) {
+        return child.fetchIsAvailable();
+      }))
+      .then(function (results) {
+        return results.every(function (x) { return x; });
       });
     },
 

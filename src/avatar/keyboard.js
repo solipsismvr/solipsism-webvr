@@ -6,8 +6,8 @@
 function keyboard (THREE, options) {
 
   return {
-    isAvailable: function () {
-      return true;
+    fetchIsAvailable: function () {
+      return Promise.resolve(true);
     },
 
     getHandler: function() {

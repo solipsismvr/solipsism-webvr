@@ -10,7 +10,9 @@ function renderer (THREE, options) {
   }, options || {});
 
   return {
-    getAvailable: function () { return true; },
+    fetchIsAvailable: function () {
+      return Promise.resolve(true);
+    },
 
     getHandler: function (scene) {
       // Create a camera

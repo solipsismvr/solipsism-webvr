@@ -7,8 +7,8 @@ function mouselook (THREE) {
     /**
      * Returns true if the browser is capable of using this plugin
      */
-    isAvailable: function () {
-      return 'pointerLockElement' in document || 'mozPointerLockElement' in document || 'webkitPointerLockElement' in document;
+    fetchIsAvailable: function () {
+      return Promise.resolve('pointerLockElement' in document || 'mozPointerLockElement' in document || 'webkitPointerLockElement' in document);
     },
 
     /**
