@@ -30,19 +30,56 @@ module.exports = function (children) {
         handlers.push(child.getHandler(scene));
       });
 
+      /**
+       * Find the first handle with the given method and return the result
+       */
       function findFirst (method) {
         var result = null;
-        handlers.some(function (handler) {
+        if(handlers.some(function (handler) {
           if(handler[method]) {
             result = handler[method]();
+            return true;
+          }
+          return false;
+        })) {
+          return result;
+        }
+
+        throw new Error("No " + method + "() method defined on any avatar handler.");
+      }
+
+      /**
+       * Call the given method on every handler
+       */
+      function callEvery (method) {
+        var args = Array.prototype.slice.call(arguments, 1);
+        handlers.forEach(function (handler) {
+          if (handler[method]) {
+            handler[method].apply(handler, args);
           }
         });
-        return result;
       }
 
       return {
         getCamera: function () {
           return findFirst('getCamera');
+        },
+
+        getHmd: function () {
+          return findFirst('getHmd');
+        },
+
+        getControllers: function () {
+          return handlers.reduce(
+            function (list, handler) {
+              if (handler.getControllers) {
+                return list.concat(handler.getControllers());
+              } else {
+                return list;
+              }
+            },
+            []
+          );
         },
 
         applyAvatarObject: function (startAvatarObject) {
@@ -59,19 +96,15 @@ module.exports = function (children) {
         },
 
         onRender: function (time) {
-          return handlers.forEach(function (handler) {
-            if (handler.onRender) {
-              handler.onRender(time);
-            }
-          });
+          callEvery('onRender', time);
+        },
+
+        setLocation: function (matrix, scale) {
+          callEvery('setLocation', matrix, scale);
         },
 
         stop: function () {
-          return handlers.forEach(function (handler) {
-            if (handler.stop) {
-              return handler.stop();
-            }
-          });
+          callEvery('stop');
         },
       }
     }

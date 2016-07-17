@@ -1,3 +1,5 @@
+var objectTracker = require('../support/objectTracker');
+
 /**
  * AvatarPlugin for a mouse-look based HMD
  */
@@ -58,6 +60,8 @@ function mouselook (THREE) {
 
       element.addEventListener('click', onDocumentClick, false);
 
+      var hmd = objectTracker(THREE, [yawObject, pitchObject]);
+
       return {
 
         /**
@@ -81,22 +85,13 @@ function mouselook (THREE) {
           return yawObject;
         },
 
-        /**
-         * Returns the pose information; in this case a quaternion
-         */
-        getPose: function () {
-          console.log('not implemennted');
-          return;
-
-          var rotation = new THREE.Euler( 0, 0, 0, "YXZ" );
-          var quaternion = new THREE.Quaternion();
-          rotation.set(xRotation, yRoation, 0);
-          quaternion.setFromEuler(rotation);
-
-          return {
-            quaternion: quaternion
-          };
+        getHmd: function() {
+          return hmd;
         },
+
+        onRender: function(time) {
+          hmd.onRender(time);
+        }
       };
     },
   };
