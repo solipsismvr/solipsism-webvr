@@ -13,14 +13,12 @@ module.exports = function (THREE) {
       mouseLook: require('./avatar/mouseLook').bind(this, THREE),
       keyboard: require('./avatar/keyboard').bind(this, THREE),
       roomscale: require('./avatar/roomscale').bind(this, THREE),
-      viveController: require('./avatar/roomscale').bind(this, THREE),
-
+      viveController: require('./avatar/viveController').bind(this, THREE),
       renderer: require('./avatar/renderer').bind(this, THREE),
 
 // Not yet implemented
 //      seated: require('./avatar/seated').bind(this, THREE),
 //      phoneLook: require('./avatar/phoneLook').bind(this, THREE),
-//      viveController: require('./avatar/viveController').bind(this, THREE),
     }
   };
 
