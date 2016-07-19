@@ -64,6 +64,10 @@ function renderer (THREE, options) {
           return camera;
         },
 
+        setLocation: function (matrix, scale) {
+          vrEffect.scale = scale;
+        },
+
         onRender: function () {
           vrEffect.render(scene, camera);
         }
