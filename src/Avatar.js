@@ -1,5 +1,3 @@
-var AvatarHmd = require('./AvatarHmd.js');
-
 function Avatar (handler) {
   var handlerHandler = null;
   var camera;
