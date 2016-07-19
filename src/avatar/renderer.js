@@ -42,7 +42,7 @@ function renderer (THREE, options) {
       // Add the VR toggling button
       if (WEBVR.isLatestAvailable() === true) {
         var self = this;
-        appliedOptions.parentEl.appendChild( WEBVR.getButton( this.effect ) );
+        appliedOptions.parentEl.appendChild( WEBVR.getButton( vrEffect ) );
       }
 
       var msg;

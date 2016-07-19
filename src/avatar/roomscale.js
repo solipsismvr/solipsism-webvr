@@ -15,12 +15,13 @@ module.exports = function (THREE, options) {
 
       return {
         applyAvatarObject: function (avatarObject) {
-          var vrControls = new VRControls(avatarObject);
+          vrControls = new VRControls(THREE, avatarObject);
           vrControls.track = function (gameObject) {
             vrControls.on('updatePose', function(pose) {
-              gameObject.upate(pose);
+              gameObject.update(pose);
             });
           }
+          return avatarObject;
         },
 
         getHmd: function () {

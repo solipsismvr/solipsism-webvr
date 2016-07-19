@@ -1,3 +1,5 @@
+var ee = require('event-emitter');
+
 function viveController (THREE, options) {
 
   var appliedOptions = Object.assign({
@@ -15,7 +17,7 @@ function viveController (THREE, options) {
       if (navigator.getVRDisplays) {
         navigator.getVRDisplays().then(function (devices) {
           if((devices.length > 0) && devices[0].stageParameters) {
-            standingMatrix = devices[0].stageParameters.standingMatrix;
+            standingMatrix.fromArray(devices[0].stageParameters.sittingToStandingTransform);
           }
         });
       }
@@ -64,7 +66,7 @@ function viveController (THREE, options) {
               quaternion: [orientation.x, orientation.y, orientation.z, orientation.w],
               velocity: pose.linearVelocity ? [pose.linearVelocity.x, pose.linearVelocity.y, pose.linearVelocity.z] : [0, 0, 0],
               angularVelocity: pose.angularVelocity ? [pose.angularVelocity.x, pose.angularVelocity.y, pose.angularVelocity.z] : [0, 0, 0],
-              scale: scale,
+              scale: worldScale,
               visible: true,
             });
 

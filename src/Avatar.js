@@ -50,7 +50,7 @@ function Avatar (handler) {
      */
     setLocation: function(matrix, scale) {
       if (handlerHandler && handlerHandler.setLocation) {
-        handlerHandler.setLocation(time);
+        handlerHandler.setLocation(matrix, scale);
       }
     },
   };
