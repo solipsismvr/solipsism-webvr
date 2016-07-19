@@ -29,6 +29,8 @@ function ViveControllerLoader(THREE) {
         var mesh = object.children[0];
         mesh.material.map = loader.load( vivePath + 'onepointfive_texture.png' );
         mesh.material.specularMap = loader.load( vivePath + 'onepointfive_spec.png' );
+        mesh.receiveShadow = true;
+        mesh.castShadow = true;
 
         viveController = object;
 
