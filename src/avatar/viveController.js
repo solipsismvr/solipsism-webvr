@@ -29,7 +29,7 @@ function viveController (THREE, options) {
       // Return a single controller object
       function getController(gamepadId) {
         var controller = ee({});
-        var wasPressed = [false, false, false, false];
+        var wasPressed = [false, false, false, false, false];
 
         controller.onRender = function () {
           var gamepad = navigator.getGamepads()[gamepadId];
@@ -86,7 +86,17 @@ function viveController (THREE, options) {
             });
 
             if(gamepad.axes[0] !== 0 || gamepad.axes[1]  !== 0) {
+              if(!wasPressed[4]) {
+                controller.emit('thumbdown', gamepad.axes[0], gamepad.axes[1]);
+                wasPressed[4] = true;
+              }
               controller.emit('thumbswipe', gamepad.axes[0], gamepad.axes[1]);
+
+            } else {
+              if(wasPressed[4]) {
+                controller.emit('thumbup');
+                wasPressed[4] = false;
+              }
             }
 
           } else {
