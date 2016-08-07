@@ -112,6 +112,62 @@ function viveController (THREE, options) {
           }
         };
 
+        function controllerAxis(axis) {
+          var axisHandler = {};
+
+          return {
+            // Allow continuous scrolling, so that multiple swipe gestures can
+            // scroll over a range with more precision
+            withSwipeMode: function(mode, options) {
+              var swipeModeHandler = ee({});
+
+              if(mode !== 'continuous') {
+                throw new Error('Only "continuous" mode is supported');
+              }
+
+              var chosenOptions = Object.assign(
+                { min: 0, max: 1, start: 0.5, speed: 1, epsilon: 0.01 },
+                options
+              );
+
+              var lastValue = null;
+              var baseValue = null;
+              var currentValue = chosenOptions.start;
+
+              controller.on('thumbdown', function() {
+                baseValue = currentValue - arguments[axis] * chosenOptions.speed * 2;
+              });
+
+              controller.on('thumbswipe', function() {
+                var nextValue = arguments[axis];
+
+                if(lastValue === null || Math.abs(nextValue - lastValue) > chosenOptions.epsilon) {
+                  lastValue = nextValue;
+
+                  currentValue = baseValue + (nextValue * chosenOptions.speed * 2);
+                  currentValue = Math.min(chosenOptions.max, Math.max(chosenOptions.min, currentValue));
+
+                  swipeModeHandler.emit('change', currentValue);
+                }
+              });
+
+              // Pass initial value to any onchange listeners
+              setTimeout(function() {
+                swipeModeHandler.emit('change', currentValue);
+              }, 0);
+
+              swipeModeHandler.getValue = function() {
+                return currentValue;
+              };
+
+              return swipeModeHandler;
+            }
+          }
+        }
+
+        controller.getXAxis = function () { return controllerAxis(0); }
+        controller.getYAxis =  function () { return controllerAxis(1); }
+
         return controller;
       };
 
