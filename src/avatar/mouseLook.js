@@ -27,6 +27,8 @@ function mouselook (THREE) {
       yawObject.position.y = 10;
       yawObject.add(pitchObject);
 
+      var PI_2 = Math.PI / 2;
+
       // Mouse move - update the rotation variables if pointer lock is enabled
       var onMouseMove = function (event) {
         if (!pointerLockEnabled) return;
