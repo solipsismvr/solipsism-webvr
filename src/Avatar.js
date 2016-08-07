@@ -2,6 +2,8 @@ function Avatar (handler) {
   var handlerHandler = null;
   var camera;
 
+  var controllers = null;
+
   return {
     /**
      * Add the avatar to the scene.
@@ -41,7 +43,46 @@ function Avatar (handler) {
      * Return an array of representations of controllers, with support for track() and on('updatePose')
      */
     getControllers: function() {
-      return handlerHandler.getControllers();
+      if(controllers === null) {
+        controllers = handlerHandler.getControllers();
+      }
+      return controllers;
+    },
+
+    /**
+     * Calls the given callback with each controller
+     */
+    withEachController: function(callback) {
+      return this.getControllers().forEach(callback);
+    },
+
+    /**
+     * Calls the given callback with the left controller
+     */
+    withLeftController: function(callback) {
+      var controllers = this.getControllers();
+      if(controllers.length > 0) {
+        return callback(controllers[0]);
+      }
+    },
+
+    /**
+     * Calls the given callback with the right controller
+     */
+    withRightController: function(callback) {
+      var controllers = this.getControllers();
+      if(controllers.length > 1) {
+        return callback(controllers[1]);
+      }
+    },
+
+    /**
+     * Calls the given callback if no controllers exist
+     */
+    withoutControllers: function(callback) {
+      if(this.getControllers().length === 0) {
+        return callback();
+      }
     },
 
     /**
