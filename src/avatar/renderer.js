@@ -7,6 +7,7 @@ function renderer (THREE, options) {
     shadows: false,
     minDistance: 0.01,
     maxDistance: 100,
+    antialias: false,
   }, options || {});
 
   return {
@@ -22,7 +23,7 @@ function renderer (THREE, options) {
       camera.updateProjectionMatrix();
 
       // Set up the base renderer
-      renderer = new THREE.WebGLRenderer({ antialias: true });
+      renderer = new THREE.WebGLRenderer({ antialias: appliedOptions.antialias });
       renderer.setClearColor(0x101010);
       renderer.setPixelRatio(window.devicePixelRatio);
       renderer.setSize(window.innerWidth, window.innerHeight);
