@@ -70,16 +70,22 @@ function viveController (THREE, options) {
               visible: true,
             });
 
+            var BUTTON_NAMES = [ 'trackpad', 'trigger', 'menu', 'grip' ];
+
             // Check buttons
             gamepad.buttons.forEach(function (button, i) {
               if(button.pressed) {
                 controller.emit('buttondown', i);
+                controller.emit('buttondown.' + BUTTON_NAMES[i], i);
+
                 if(!wasPressed[i]) {
                   controller.emit('buttonpress', i);
-                }
+                  controller.emit('buttonpress.' + BUTTON_NAMES[i], i);
+              }
               } else {
                 if(wasPressed[i]) {
                   controller.emit('buttonoff', i);
+                  controller.emit('buttonoff.' + BUTTON_NAMES[i], i);
                 }
               }
               wasPressed[i] = button.pressed;
