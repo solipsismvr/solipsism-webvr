@@ -10,5 +10,8 @@
   "license": "MIT",
   "dependencies": {
     "event-emitter": "^0.3.4"
+  },
+  "devDependencies": {
+    "file-loader": "^0.9.0"
   }
 }

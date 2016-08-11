@@ -23,12 +23,12 @@ function ViveControllerLoader(THREE) {
 
       callbacks = [callback];
 
-      loader.load(vivePath + '/vr_controller_vive_1_5.obj', function (object) {
+      loader.load(require('file!../assets/vr_controller_vive_1_5.obj'), function (object) {
         var loader = new THREE.TextureLoader();
 
         var mesh = object.children[0];
-        mesh.material.map = loader.load( vivePath + 'onepointfive_texture.png' );
-        mesh.material.specularMap = loader.load( vivePath + 'onepointfive_spec.png' );
+        mesh.material.map = loader.load(require('file!../assets/onepointfive_texture.png'));
+        mesh.material.specularMap = loader.load(require('file!../assets/onepointfive_spec.png'));
         mesh.receiveShadow = true;
         mesh.castShadow = true;
 
