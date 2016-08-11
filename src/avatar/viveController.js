@@ -112,6 +112,15 @@ function viveController (THREE, options) {
           }
         };
 
+        /**
+         * Provide an object that will track movements of the controller
+         */
+        controller.track = function(object) {
+          controller.on('updatePose', function (properties) {
+            object.update(properties);
+          });
+        };
+
         function controllerAxis(axis) {
           var axisHandler = {};
 
