@@ -23,7 +23,10 @@ function renderer (THREE, options) {
       camera.updateProjectionMatrix();
 
       // Set up the base renderer
-      renderer = new THREE.WebGLRenderer({ antialias: appliedOptions.antialias });
+      renderer = new THREE.WebGLRenderer({
+        antialias: appliedOptions.antialias,
+        preserveDrawingBuffer: true,
+      });
       renderer.setClearColor(0x101010);
       renderer.setPixelRatio(window.devicePixelRatio);
       renderer.setSize(window.innerWidth, window.innerHeight);
