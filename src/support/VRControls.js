@@ -55,7 +55,7 @@ var VRControls = function (THREE, object, onError) {
   };
 
   this.update = function (worldLocationMatrix, scale) {
-    if (vrInput) {
+    if (vrInput && vrInput.getPose) {
       var pose = vrInput.getPose();
 
       if (pose.orientation !== null) {

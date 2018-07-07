@@ -34,7 +34,7 @@ function viveController (THREE, options) {
         controller.onRender = function () {
           var gamepad = navigator.getGamepads()[gamepadId];
 
-          if (gamepad !== undefined && gamepad.pose !== null) {
+          if (gamepad && gamepad.pose !== null) {
             var pose = gamepad.pose;
 
             // Transform gamepad data into the appropriate space
@@ -43,6 +43,11 @@ function viveController (THREE, options) {
             var position = new THREE.Vector3();
             var orientation = new THREE.Quaternion();
             var scaleVector = new THREE.Vector3(1, 1, 1);
+
+            if(pose.position === null || pose.orientation === null) {
+              return;
+            }
+
             position.fromArray(pose.position);
             orientation.fromArray(pose.orientation);
 

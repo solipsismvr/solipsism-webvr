@@ -165,6 +165,13 @@ var VREffect = function ( THREE, renderer, onError ) {
   var cameraR = new THREE.PerspectiveCamera();
   cameraR.layers.enable( 2 );
 
+  var cameraMatrix = new THREE.Matrix4();
+  var viewMatrix = new THREE.Matrix4();
+  var standingMatrix = new THREE.Matrix4();
+  var invStandingMatrix = new THREE.Matrix4();
+
+  var frameData = new VRFrameData();
+
   this.render = function ( scene, camera ) {
 
     if ( vrHMD && scope.isPresenting ) {
@@ -178,13 +185,15 @@ var VREffect = function ( THREE, renderer, onError ) {
 
       }
 
+      vrHMD.getFrameData(frameData);
+      standingMatrix.fromArray(vrHMD.stageParameters.sittingToStandingTransform);
+      invStandingMatrix.getInverse(standingMatrix);
+
       var eyeParamsL = vrHMD.getEyeParameters( 'left' );
       var eyeParamsR = vrHMD.getEyeParameters( 'right' );
 
       eyeTranslationL.fromArray( eyeParamsL.offset );
       eyeTranslationR.fromArray( eyeParamsR.offset );
-      eyeFOVL = eyeParamsL.fieldOfView;
-      eyeFOVR = eyeParamsR.fieldOfView;
 
       // When rendering we don't care what the recommended size is, only what the actual size
       // of the backbuffer is.
@@ -197,15 +206,27 @@ var VREffect = function ( THREE, renderer, onError ) {
 
       if ( camera.parent === null ) camera.updateMatrixWorld();
 
-      cameraL.projectionMatrix = fovToProjection( eyeFOVL, true, camera.near, camera.far );
-      cameraR.projectionMatrix = fovToProjection( eyeFOVR, true, camera.near, camera.far );
+      cameraL.projectionMatrix.fromArray(frameData.leftProjectionMatrix);
+      cameraR.projectionMatrix.fromArray(frameData.rightProjectionMatrix);
 
-      camera.matrixWorld.decompose( cameraL.position, cameraL.quaternion, cameraL.scale );
-      camera.matrixWorld.decompose( cameraR.position, cameraR.quaternion, cameraR.scale );
+      viewMatrix.fromArray(frameData.leftViewMatrix);
+      viewMatrix.multiply(invStandingMatrix);
+      cameraMatrix.getInverse(viewMatrix);
 
-      var scale = this.scale;
-      cameraL.translateOnAxis( eyeTranslationL, scale );
-      cameraR.translateOnAxis( eyeTranslationR, scale );
+      cameraMatrix.decompose(cameraL.position, cameraL.quaternion, cameraL.scale);
+
+      viewMatrix.fromArray(frameData.rightViewMatrix);
+      viewMatrix.multiply(invStandingMatrix);
+      cameraMatrix.getInverse(viewMatrix);
+
+      cameraMatrix.decompose(cameraR.position, cameraR.quaternion, cameraR.scale);
+
+//    To do, reincorporate camera movement
+//      camera.matrixWorld.decompose( cameraL.position, cameraL.quaternion, cameraL.scale );
+//      camera.matrixWorld.decompose( cameraR.position, cameraR.quaternion, cameraR.scale );
+//      var scale = this.scale;
+//      cameraL.translateOnAxis( eyeTranslationL, scale );
+//      cameraR.translateOnAxis( eyeTranslationR, scale );
 
 
       // render left eye
