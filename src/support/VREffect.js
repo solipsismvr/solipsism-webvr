@@ -9,42 +9,24 @@
  *
  */
 
-var VREffect = function ( THREE, renderer, onError ) {
+var VREffect = function (THREE, renderer, onError) {
 
   var vrHMD;
+  var vrSession = null;
+  var vrFrameOfRef = null;
+
   var eyeTranslationL = new THREE.Vector3();
   var eyeTranslationR = new THREE.Vector3();
   var renderRectL, renderRectR;
   var eyeFOVL, eyeFOVR;
 
-  function gotVRDevices( devices ) {
-
-    for ( var i = 0; i < devices.length; i ++ ) {
-
-      if ( 'VRDisplay' in window && devices[ i ] instanceof VRDisplay ) {
-
-        vrHMD = devices[ i ];
-        break; // We keep the first we encounter
-
-      }
-
-    }
-
-    if ( vrHMD === undefined ) {
-
-      if ( onError ) onError( 'HMD not available' );
-
-    }
-
+  if (navigator.xr) {
+    navigator.xr.requestDevice().then(function (device) {
+      vrHMD = device;
+    }).catch(function(error) {
+      if (onError) onError('HMD not available: ' + error);
+    });
   }
-
-  if ( navigator.getVRDisplays ) {
-
-    navigator.getVRDisplays().then( gotVRDevices );
-
-  }
-
-  //
 
   this.isPresenting = false;
   this.scale = 1;
@@ -55,41 +37,34 @@ var VREffect = function ( THREE, renderer, onError ) {
   var rendererPixelRatio = renderer.getPixelRatio();
 
   this.setSize = function ( width, height ) {
-
     rendererSize = { width: width, height: height };
 
     if ( scope.isPresenting ) {
-
       var eyeParamsL = vrHMD.getEyeParameters( 'left' );
       renderer.setPixelRatio( 1 );
       renderer.setSize( eyeParamsL.renderWidth * 2, eyeParamsL.renderHeight, false );
 
     } else {
-
       renderer.setPixelRatio( rendererPixelRatio );
       renderer.setSize( width, height );
-
     }
-
   };
 
   // fullscreen
 
   var canvas = renderer.domElement;
+  var gl = canvas.getContext("webgl");
 
+  /*
   function onFullscreenChange () {
-
     var wasPresenting = scope.isPresenting;
-    scope.isPresenting = vrHMD !== undefined && vrHMD.isPresenting;
+    scope.isPresenting = vrSession !== null;
 
-    if ( wasPresenting === scope.isPresenting ) {
-
+    if (wasPresenting === scope.isPresenting) {
       return;
-
     }
 
-    if ( scope.isPresenting ) {
-
+    if (scope.isPresenting) {
       rendererPixelRatio = renderer.getPixelRatio();
       rendererSize = renderer.getSize();
 
@@ -110,123 +85,116 @@ var VREffect = function ( THREE, renderer, onError ) {
     }
 
   }
+  */
 
-  window.addEventListener( 'vrdisplaypresentchange', onFullscreenChange, false );
-
-  this.setFullScreen = function ( boolean ) {
-
-    return new Promise( function ( resolve, reject ) {
-
-      if ( vrHMD === undefined ) {
-
-        reject( new Error( 'No VR hardware found.' ) );
-        return;
-
-      }
-
-      if ( scope.isPresenting === boolean ) {
-
-        resolve();
-        return;
-
-      }
-
-      if ( boolean ) {
-
-        resolve( vrHMD.requestPresent( [ { source: canvas } ] ) );
-
-      } else {
-
-        resolve( vrHMD.exitPresent() );
-
-      }
-
-    } );
-
-  };
+  //window.addEventListener( 'vrdisplaypresentchange', onFullscreenChange, false );
 
   this.requestPresent = function () {
-
-    return this.setFullScreen( true );
-
+    return this.setFullScreen(true);
   };
 
   this.exitPresent = function () {
+    return this.setFullScreen(false);
+  };
 
-    return this.setFullScreen( false );
+  /**
+   * Sets full-screen mode and enables VR
+   */
+  this.setFullScreen = function (boolean) {
+    return new Promise(function (resolve, reject) {
+      // No hardware
+      if (vrHMD === undefined) {
+        reject(new Error('No VR hardware found.'));
+        return;
+      }
 
+      // No-op
+      if (scope.isPresenting === boolean) {
+        resolve();
+        return;
+      }
+
+      // Enable
+      if (boolean) {
+        resolve(vrHMD.requestSession({ immersive: true, exclusive: true }).then(function(session) {
+          vrSession = session;
+
+          // Set this variable to let other subsystems know that a session is active
+          window.vrSession = session;
+          scope.isPresenting = true;
+
+          return vrSession.requestFrameOfReference("stage")
+            .then(function (frameOfRef) {
+              window.vrFrameOfRef = frameOfRef;
+              vrFrameOfRef = frameOfRef;
+            })
+            .then(function () {
+              return gl.setCompatibleXRDevice(vrHMD)
+            })
+            .then(function () {
+              vrSession.baseLayer = new XRWebGLLayer(vrSession, gl);
+            });
+        }));
+
+      // Disable
+      } else {
+        var session = vrSession;
+        vrSession = null;
+        window.vrSession = null;
+        scope.isPresenting = false;
+        resolve(session.end());
+      }
+    });
   };
 
   // render
-
-  var cameraL = new THREE.PerspectiveCamera();
-  cameraL.layers.enable( 1 );
-
-  var cameraR = new THREE.PerspectiveCamera();
-  cameraR.layers.enable( 2 );
-
-  this.render = function ( scene, camera ) {
-
-    if ( vrHMD && scope.isPresenting ) {
+  this.render = function (scene, camera, vrFrame) {
+    if (vrSession && vrFrame) {
+      let pose = vrFrame.getDevicePose(vrFrameOfRef);
+      gl.bindFramebuffer(gl.FRAMEBUFFER, vrSession.baseLayer.framebuffer);
 
       var autoUpdate = scene.autoUpdate;
-
-      if ( autoUpdate ) {
-
+      if (autoUpdate) {
         scene.updateMatrixWorld();
         scene.autoUpdate = false;
-
       }
 
-      var eyeParamsL = vrHMD.getEyeParameters( 'left' );
-      var eyeParamsR = vrHMD.getEyeParameters( 'right' );
+      // TO DO: process this.scale != 1 into separating eye distance
+      // TO DO: incorporate camera position
 
-      eyeTranslationL.fromArray( eyeParamsL.offset );
-      eyeTranslationR.fromArray( eyeParamsR.offset );
-      eyeFOVL = eyeParamsL.fieldOfView;
-      eyeFOVR = eyeParamsR.fieldOfView;
-
-      // When rendering we don't care what the recommended size is, only what the actual size
-      // of the backbuffer is.
-      var size = renderer.getSize();
-      renderRectL = { x: 0, y: 0, width: size.width / 2, height: size.height };
-      renderRectR = { x: size.width / 2, y: 0, width: size.width / 2, height: size.height };
+      let cameraEye = new THREE.PerspectiveCamera();
+      cameraEye.position.set(0,1.8,0);
+      let viewMatrix = new THREE.Matrix4();
+      let cameraMatrix = new THREE.Matrix4();
 
       renderer.setScissorTest( true );
       renderer.clear();
 
-      if ( camera.parent === null ) camera.updateMatrixWorld();
+      // Draw each eye
+      for (let view of vrFrame.views) {
+        let viewport = vrSession.baseLayer.getViewport(view);
 
-      cameraL.projectionMatrix = fovToProjection( eyeFOVL, true, camera.near, camera.far );
-      cameraR.projectionMatrix = fovToProjection( eyeFOVR, true, camera.near, camera.far );
+        // Set projection matrix
+        cameraEye.projectionMatrix.fromArray(view.projectionMatrix);
 
-      camera.matrixWorld.decompose( cameraL.position, cameraL.quaternion, cameraL.scale );
-      camera.matrixWorld.decompose( cameraR.position, cameraR.quaternion, cameraR.scale );
+        // Set view matrix
+        // TO DO: incorporate camera position somehow (perhaps a transfomration matrix?)
+        viewMatrix.fromArray(pose.getViewMatrix(view));
+        cameraMatrix.getInverse(viewMatrix);
+        cameraMatrix.decompose(cameraEye.position, cameraEye.quaternion, cameraEye.scale);
 
-      var scale = this.scale;
-      cameraL.translateOnAxis( eyeTranslationL, scale );
-      cameraR.translateOnAxis( eyeTranslationR, scale );
-
-
-      // render left eye
-      renderer.setViewport( renderRectL.x, renderRectL.y, renderRectL.width, renderRectL.height );
-      renderer.setScissor( renderRectL.x, renderRectL.y, renderRectL.width, renderRectL.height );
-      renderer.render( scene, cameraL );
-
-      // render right eye
-      renderer.setViewport( renderRectR.x, renderRectR.y, renderRectR.width, renderRectR.height );
-      renderer.setScissor( renderRectR.x, renderRectR.y, renderRectR.width, renderRectR.height );
-      renderer.render( scene, cameraR );
+        renderer.setViewport( viewport.x, viewport.y, viewport.width, viewport.height );
+        renderer.setScissor( viewport.x, viewport.y, viewport.width, viewport.height );
+        renderer.render( scene, cameraEye );
+      }
 
       renderer.setScissorTest( false );
 
-      if ( autoUpdate ) {
-
+      if (autoUpdate) {
         scene.autoUpdate = true;
-
       }
 
-      vrHMD.submitFrame();
+//      vrHMD.submitFrame();
 
       return;
 

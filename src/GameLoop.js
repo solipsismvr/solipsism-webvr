@@ -5,37 +5,29 @@ function GameLoop() {
   this.lastFrameTime = (new Date()).getTime();
   this.lastTime = (new Date()).getTime();
   this.frameCounter = 0;
-
-  // Find a vrDisplay to call requestAnimationFrame() on instead, for maximum render-speed
-  this.vrDisplay = window;
-  if(navigator.getVRDisplays) {
-    var self = this;
-    navigator.getVRDisplays().then(function(displays) {
-      if (displays.length > 0) {
-        self.vrDisplay = displays[0];
-      }
-    });
-  }
-
 }
 
 GameLoop.prototype.start = function() {
   this.isAnimating = true;
-  this.animate();
+
+  frameSource = window.vrSession ? window.vrSession : window;
+  frameSource.requestAnimationFrame( this.drawFrame.bind(this) );
 }
 
 GameLoop.prototype.stop = function() {
   this.isAnimating = false;
 }
 
-GameLoop.prototype.animate = function() {
+GameLoop.prototype.drawFrame = function(delta, vrFrame) {
+  this.render(vrFrame);
+
   if( this.isAnimating) {
-    this.vrDisplay.requestAnimationFrame( this.start.bind(this) );
+    frameSource = window.vrSession ? window.vrSession : window;
+    frameSource.requestAnimationFrame( this.drawFrame.bind(this) );
   }
-  this.render();
 }
 
-GameLoop.prototype.render = function() {
+GameLoop.prototype.render = function(vrFrame) {
   var newTime = (new Date()).getTime();
 
   if (this.statusEl) {
@@ -52,7 +44,7 @@ GameLoop.prototype.render = function() {
   this.lastTime = newTime;
 
   this.callbacks.forEach(function (callback) {
-    callback(delta);
+    callback(delta, vrFrame);
   });
 }
 
@@ -61,13 +53,14 @@ GameLoop.prototype.render = function() {
  * Item must have an onRender() method.
  */
 GameLoop.prototype.addItem = function(item) {
+  console.log('additem', item)
   if (!item.onRender) {
     console.log('GameLoop.addItem(): No onRender() method on', item);
     return;
   }
 
-  this.callbacks.push(function(delta) {
-    item.onRender(delta);
+  this.callbacks.push(function(delta,b) {
+    item.onRender(delta,b);
   });
 }
 

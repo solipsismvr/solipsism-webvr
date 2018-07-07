@@ -21,6 +21,7 @@ function renderer (THREE, options) {
 
       camera.aspect = window.innerWidth / window.innerHeight;
       camera.updateProjectionMatrix();
+      camera.position.set(0,1.8,0);
 
       // Set up the base renderer
       renderer = new THREE.WebGLRenderer({
@@ -72,8 +73,8 @@ function renderer (THREE, options) {
           vrEffect.scale = scale;
         },
 
-        onRender: function () {
-          vrEffect.render(scene, camera);
+        onRender: function (delta, vrFrame) {
+          vrEffect.render(scene, camera, vrFrame);
         }
       }
     }

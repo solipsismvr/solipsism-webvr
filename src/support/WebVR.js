@@ -4,43 +4,30 @@
  */
 
 var WEBVR = {
-
   isLatestAvailable: function () {
-
-    return navigator.getVRDisplays !== undefined;
-
-  },
-
-  isAvailable: function () {
-
-    return navigator.getVRDisplays !== undefined || navigator.getVRDevices !== undefined;
-
+    return navigator.xr !== undefined;
   },
 
   getMessage: function () {
-
     var message;
 
-    if ( navigator.getVRDisplays ) {
+    console.log('navigator.xr',navigator.xr);
 
-      navigator.getVRDisplays().then( function ( displays ) {
+    if (navigator.xr) {
+      navigator.xr.requestDevice()
+        .then(function (device) {})
+        .catch(function(error) {
+          message = 'VR input not available: ' + error;
+        });
 
-        if ( displays.length === 0 ) message = 'WebVR supported, but no VRDisplays found.';
-
-      } );
-
-    } else if ( navigator.getVRDevices ) {
-
+    } else if (navigator.getVRDevices || navigator.getVRDisplays) {
       message = 'Your browser supports WebVR but not the latest version. See <a href="http://webvr.info">webvr.info</a> for more info.';
 
     } else {
-
       message = 'Your browser does not support WebVR. See <a href="http://webvr.info">webvr.info</a> for assistance.';
-
     }
 
     if ( message !== undefined ) {
-
       var container = document.createElement( 'div' );
       container.style.position = 'absolute';
       container.style.left = '0';
@@ -63,13 +50,10 @@ var WEBVR = {
       container.appendChild( error );
 
       return container;
-
     }
-
   },
 
-  getButton: function ( effect ) {
-
+  getButton: function (effect) {
     var button = document.createElement( 'button' );
     button.style.position = 'absolute';
     button.style.left = 'calc(50% - 50px)';
@@ -86,22 +70,20 @@ var WEBVR = {
     button.style.textAlign = 'center';
     button.style.zIndex = '999';
     button.textContent = 'ENTER VR';
+
     button.onclick = function() {
-
+      console.log(effect.isPresenting);
       effect.isPresenting ? effect.exitPresent() : effect.requestPresent();
-
     };
 
-    window.addEventListener( 'vrdisplaypresentchange', function ( event ) {
-
-      button.textContent = effect.isPresenting ? 'EXIT VR' : 'ENTER VR';
-
+    window.addEventListener( 'vrdisplaypresentchange', function (event) {
+      console.log('vrdpc here');
+//      var display = evt.display || evt.detail.display;
+      button.textContent = window.vrSession ? 'EXIT VR' : 'ENTER VR';
     }, false );
 
     return button;
-
   }
-
 };
 
 module.exports = WEBVR;

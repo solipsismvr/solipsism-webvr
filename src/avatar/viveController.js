@@ -8,20 +8,10 @@ function viveController (THREE, options) {
 
   return {
     fetchIsAvailable: function () {
-      return Promise.resolve(navigator.getGamepads && navigator.getVRDisplays);
+      return Promise.resolve(navigator.getGamepads && navigator.xr);
     },
 
     getHandler: function (scene) {
-      // Fetch standing matrix for roomscale devices
-      var standingMatrix = new THREE.Matrix4();
-      if (navigator.getVRDisplays) {
-        navigator.getVRDisplays().then(function (devices) {
-          if((devices.length > 0) && devices[0].stageParameters) {
-            standingMatrix.fromArray(devices[0].stageParameters.sittingToStandingTransform);
-          }
-        });
-      }
-
       // Private properties for world transformation
       var worldLocationMatrix = new THREE.Matrix4();
       var worldScale = 1;
@@ -31,23 +21,22 @@ function viveController (THREE, options) {
         var controller = ee({});
         var wasPressed = [false, false, false, false, false];
 
-        controller.onRender = function () {
-          var gamepad = navigator.getGamepads()[gamepadId];
+        controller.onRender = function (time, vrFrame) {
+          var inputSource = null;
+          var pose = null;
 
-          if (gamepad !== undefined && gamepad.pose !== null) {
-            var pose = gamepad.pose;
+          if (vrFrame) {
+            inputSource = vrFrame.session.getInputSources()[gamepadId];
+          }
 
+          if (inputSource) {
+            pose = vrFrame.getInputPose(inputSource, window.vrFrameOfRef);
+          }
+
+          if (pose && pose.gripMatrix) {
             // Transform gamepad data into the appropriate space
             var matrix = new THREE.Matrix4();
-
-            var position = new THREE.Vector3();
-            var orientation = new THREE.Quaternion();
-            var scaleVector = new THREE.Vector3(1, 1, 1);
-            position.fromArray(pose.position);
-            orientation.fromArray(pose.orientation);
-
-            matrix.compose(position, orientation, scaleVector);
-            matrix.multiplyMatrices(standingMatrix, matrix);
+            matrix.fromArray(pose.gripMatrix);
 
             // Handle world transform
             if(worldScale != 1) {
@@ -60,6 +49,9 @@ function viveController (THREE, options) {
             }
 
             // Emit updatePose events
+            var position = new THREE.Vector3();
+            var orientation = new THREE.Quaternion();
+            var scaleVector = new THREE.Vector3(1, 1, 1);
             matrix.decompose(position, orientation, scaleVector);
             controller.emit('updatePose', {
               position: [position.x, position.y, position.z],
@@ -70,6 +62,7 @@ function viveController (THREE, options) {
               visible: true,
             });
 
+            /*
             var BUTTON_NAMES = [ 'trackpad', 'trigger', 'menu', 'grip' ];
 
             // Check buttons
@@ -104,6 +97,7 @@ function viveController (THREE, options) {
                 wasPressed[4] = false;
               }
             }
+            */
 
           } else {
             controller.emit('updatePose', {
@@ -197,9 +191,9 @@ function viveController (THREE, options) {
           return controllers;
         },
 
-        onRender: function (time) {
+        onRender: function (time, vrFrame) {
           controllers.forEach(function (controller) {
-            controller.onRender(time);
+            controller.onRender(time, vrFrame);
           });
         }
       }

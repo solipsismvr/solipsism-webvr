@@ -12,13 +12,11 @@ var VRControls = function (THREE, object, onError) {
   var vrInput;
   var standingMatrix = new THREE.Matrix4();
 
-  if (navigator.getVRDisplays) {
-    navigator.getVRDisplays().then(function (devices) {
-      if(devices.length > 0) {
-        vrInput = devices[0];
-      } else {
-        if (onError) onError('VR input not available.');
-      }
+  if (navigator.xr) {
+    navigator.xr.requestDevice().then(function (device) {
+      vrInput = device;
+    }).catch(function(error) {
+      if (onError) onError('VR input not available: ' + error);
     });
   }
 
@@ -26,9 +24,11 @@ var VRControls = function (THREE, object, onError) {
    * Return a promise that resolves to true if this client has a VR Display
    */
   this.fetchHasVRDisplay = function() {
-    if (navigator.getVRDisplays) {
-      return navigator.getVRDisplays().then(function (devices) {
-        return (devices.length > 0);
+    if (navigator.xr) {
+      return navigator.xr.requestDevice().then(function (device) {
+        return true;
+      }).catch(function(error) {
+        return false;
       });
 
     } else {
@@ -40,9 +40,12 @@ var VRControls = function (THREE, object, onError) {
    * Return a promise that resolves to true if this client has a roomscale VR Display
    */
   this.fetchHasRoomscaleVRDisplay = function() {
-    if (navigator.getVRDisplays) {
-      return navigator.getVRDisplays().then(function (devices) {
-        return (devices.length > 0) && devices[0].stageParameters;
+    if (navigator.xr) {
+      return navigator.xr.requestDevice().then(function (device) {
+        // TO DO: Implement roomscale detection without actually starting a session
+        return true;
+      }).catch(function(error) {
+        return false;
       });
 
     } else {
@@ -55,7 +58,8 @@ var VRControls = function (THREE, object, onError) {
   };
 
   this.update = function (worldLocationMatrix, scale) {
-    if (vrInput) {
+    if (window.vrSession) {
+      return;
       var pose = vrInput.getPose();
 
       if (pose.orientation !== null) {

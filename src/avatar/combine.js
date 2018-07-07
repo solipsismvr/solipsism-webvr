@@ -95,8 +95,8 @@ module.exports = function (children) {
           );
         },
 
-        onRender: function (time) {
-          callEvery('onRender', time);
+        onRender: function (time, frame) {
+          callEvery('onRender', time, frame);
         },
 
         setLocation: function (matrix, scale) {

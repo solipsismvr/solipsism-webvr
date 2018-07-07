@@ -19,9 +19,9 @@ function Avatar (handler) {
     /**
      * Called by rhe GameLoop on each frame render
      */
-    onRender: function(time) {
+    onRender: function(time, frame) {
       if (handlerHandler && handlerHandler.onRender) {
-        handlerHandler.onRender(time);
+        handlerHandler.onRender(time, frame);
       }
     },
 
