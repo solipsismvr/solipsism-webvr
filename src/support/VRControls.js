@@ -54,45 +54,47 @@ var VRControls = function (THREE, object, onError) {
     return standingMatrix;
   };
 
+  // Preallocate memory for the update loop
+  var frameData = new VRFrameData();
+  var viewMatrix = new THREE.Matrix4();
+  var poseMatrix = new THREE.Matrix4();
+  var standingMatrix = new THREE.Matrix4();
+  var invStandingMatrix = new THREE.Matrix4();
+
   this.update = function (worldLocationMatrix, scale) {
-    if (vrInput && vrInput.getPose) {
-      var pose = vrInput.getPose();
+    if (vrInput && vrInput.getFrameData) {
+      vrInput.getFrameData(frameData);
 
-      if (pose.orientation !== null) {
-        object.quaternion.fromArray(pose.orientation);
-      }
-
-      if (pose.position !== null) {
-        object.position.fromArray(pose.position);
-
-      } else {
-        object.position.set(0, 0, 0);
-      }
+      // To do - pick a matrix midway between left and right eyes
+      viewMatrix.fromArray(frameData.leftViewMatrix);
 
       if (vrInput.stageParameters) {
-        object.updateMatrix();
         standingMatrix.fromArray(vrInput.stageParameters.sittingToStandingTransform);
-        object.applyMatrix( standingMatrix );
+        invStandingMatrix.getInverse(standingMatrix);
+        viewMatrix.multiply(invStandingMatrix);
       }
 
-      object.position.setFromMatrixPosition(object.matrix);
-      object.position.multiplyScalar(scale);
 
-      if(worldLocationMatrix) {
-        object.updateMatrix();
-        object.applyMatrix(worldLocationMatrix);
-      }
+      // TO DO: re-implement in VREffect
+      // object.position.setFromMatrixPosition(object.matrix);
+      // object.position.multiplyScalar(scale);
+      // if(worldLocationMatrix) {
+      //   object.updateMatrix();
+      //   object.applyMatrix(worldLocationMatrix);
+      // }
 
       var position = new THREE.Vector3();
       var orientation = new THREE.Quaternion();
       var scaleVector = new THREE.Vector3(1, 1, 1);
-      object.matrix.decompose(position, orientation, scaleVector);
+
+      poseMatrix.getInverse(viewMatrix);
+      poseMatrix.decompose(position, orientation, scaleVector);
 
       this.emit('updatePose', {
         position: [position.x, position.y, position.z],
         quaternion: [orientation.x, orientation.y, orientation.z, orientation.w],
-        velocity: pose.linearVelocity ? [pose.linearVelocity.x, pose.linearVelocity.y, pose.linearVelocity.z] : [0, 0, 0],
-        angularVelocity: pose.angularVelocity ? [pose.angularVelocity.x, pose.angularVelocity.y, pose.angularVelocity.z] : [0, 0, 0],
+        //velocity: pose.linearVelocity ? [pose.linearVelocity.x, pose.linearVelocity.y, pose.linearVelocity.z] : [0, 0, 0],
+        //angularVelocity: pose.angularVelocity ? [pose.angularVelocity.x, pose.angularVelocity.y, pose.angularVelocity.z] : [0, 0, 0],
         scale: scale,
         visible: true,
       });

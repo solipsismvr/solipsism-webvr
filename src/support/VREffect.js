@@ -12,8 +12,6 @@
 var VREffect = function ( THREE, renderer, onError ) {
 
   var vrHMD;
-  var eyeTranslationL = new THREE.Vector3();
-  var eyeTranslationR = new THREE.Vector3();
   var renderRectL, renderRectR;
   var eyeFOVL, eyeFOVR;
 
@@ -191,9 +189,6 @@ var VREffect = function ( THREE, renderer, onError ) {
 
       var eyeParamsL = vrHMD.getEyeParameters( 'left' );
       var eyeParamsR = vrHMD.getEyeParameters( 'right' );
-
-      eyeTranslationL.fromArray( eyeParamsL.offset );
-      eyeTranslationR.fromArray( eyeParamsR.offset );
 
       // When rendering we don't care what the recommended size is, only what the actual size
       // of the backbuffer is.
