@@ -1,5 +1,7 @@
 var objectTracker = require('../support/objectTracker');
 
+PI_2 = Math.PI / 2;
+
 /**
  * AvatarPlugin for a mouse-look based HMD
  */
